@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace CRMP_Auto_Calc
 {
-    class Chat
+    class Chat : IDisposable
     {
         public bool chatOpened { get; private set; }
         public bool isWork { get; private set; }
@@ -65,7 +65,7 @@ namespace CRMP_Auto_Calc
             if(floodProtection)
             {
                 TimeSpan t = DateTime.Now - lastMsgTime;
-                if (t.TotalSeconds > 1) Thread.Sleep(1000);
+                if (t.TotalSeconds < 1.5) Thread.Sleep(1000);
             }
 
             if (chatOpened)
@@ -106,5 +106,12 @@ namespace CRMP_Auto_Calc
         public void StartAsync() => new Task(() => Start()).Start();
 
         public void Stop() => isWork = false;
+
+        public void Dispose()
+        {
+            isWork = false;
+            Application.Exit();
+            ((IDisposable)globalHookTask).Dispose();
+        }
     }
 }
