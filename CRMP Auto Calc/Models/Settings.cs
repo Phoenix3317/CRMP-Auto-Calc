@@ -12,6 +12,7 @@ namespace CRMP_Auto_Calc.Models
         public bool copyChatlog = true;
         public bool floodProtection = false;
         public bool usePatterns = false;
+        public bool waitGame = true;
 
         /// <summary>
         /// 0 - copy answer to clipboard

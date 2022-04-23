@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -223,19 +224,44 @@ namespace CRMP_Auto_Calc
         static void StartCalc()
         {
             Console.Clear();
-            Write("Создание копии чата ");
-            if (settings.copyChatlog) File.Copy(settings.chatlogPath, settings.chatlogCopyPath, true);
-            Write("■\n", Green);
+            bool isWork = true;
 
             Task cancelTask = new Task(() =>
             {
-                Console.ReadKey(true);
-                chat.Stop();
+                while (isWork)
+                {
+                    if (Console.ReadKey(true).Key == ConsoleKey.Escape) isWork = false;
+                }
+                if (chat.IsWork) chat.Stop();
             });
 
+            if (settings.copyChatlog)
+            {
+                Write("Создание копии чата ");
+                File.Copy(settings.chatlogPath, settings.chatlogCopyPath, true);
+                Write("■\n", Green);
+            }
+
             cancelTask.Start();
+
+            if (settings.waitGame)
+            {
+                Write("Ожидание запуска игры ");
+                if (!WaitProcess(settings.gameName, ref isWork)) return;
+                Write("■\n", Green);
+            }
+
             Write("Чтобы остановить, нажмите ESC\n\n", Gray);
             chat.Start();
+        }
+
+        static bool WaitProcess(string process, ref bool isWork)
+        {
+            while (isWork)
+            {
+                if (Process.GetProcessesByName(process).Length > 0) return true;
+            }
+            return false;
         }
 
         static void Chat_OnChatStateChanged(bool isOpen)
@@ -246,12 +272,8 @@ namespace CRMP_Auto_Calc
 
         static void Chat_OnNewMessage(ChatLine line)
         {
-            Pattern pattern = new Pattern()
-            {
-                pattern = @"\d+\s[\+\-\*\/]\s\d+",
-                sendMode = settings.senderType,
-                answerDelay = settings.answerDelay
-            };
+            Pattern pattern = null;
+            Write($"{line.WithoutColors().message}\n", DarkGray);
 
             if (settings.usePatterns)
             {
@@ -263,9 +285,16 @@ namespace CRMP_Auto_Calc
                         return;
                     }
                 });
+
+                if (pattern == null) return;
             }
 
-            Write($"{line.WithoutColors().message}\n", DarkGray);
+            pattern = new Pattern()
+            {
+                pattern = @"\d+\s[\+\-\*\/]\s\d+",
+                sendMode = settings.senderType,
+                answerDelay = settings.answerDelay
+            };
 
             Match m = Regex.Match(line.WithoutColors().message, @"(?<n1>\d+)\s*(?<l>[\+\-\*\/])\s*(?<n2>\d+)");
             if (!m.Success) return;
@@ -274,7 +303,7 @@ namespace CRMP_Auto_Calc
                 !int.TryParse(m.Groups["n2"].Value, out int n2) ||
                 !m.Groups["l"].Success) return;
             int examplePos = line.WithoutColors().message.IndexOf(m.Value);
-            if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, Green));
+            if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns ? Black : Green, settings.usePatterns ? DarkYellow : Black));
             int answer = Solve(n1, n2, m.Groups["l"].Value);
             Write(MakeDividedText($" {answer.ToString()} "), Magenta);
 
