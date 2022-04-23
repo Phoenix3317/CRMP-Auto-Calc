@@ -9,7 +9,7 @@ namespace CRMP_Auto_Calc.Models
         public const string timeRegex = @"^\[(\d\d):(\d\d):(\d\d)\]";
 
         public string message;
-        public DateTime time
+        public DateTime Time
         {
             get
             {

@@ -11,7 +11,7 @@ namespace Phoenix3317.ExtendedConsole
         public class Text
         {
             public ConsoleColor foreground, background;
-            public ColorSet colors => new ColorSet(foreground, background);
+            public ColorSet Colors => new ColorSet(foreground, background);
             public string text;
 
             public Text(string text, ConsoleColor foreground = White, ConsoleColor background = Black)

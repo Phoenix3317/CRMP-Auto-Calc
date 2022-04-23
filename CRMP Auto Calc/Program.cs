@@ -36,8 +36,10 @@ namespace CRMP_Auto_Calc
                 LoadPatterns();
                 Write("■\n", Green);
 
-                chat = new Chat(settings.chatlogPath);
-                chat.floodProtection = settings.floodProtection;
+                chat = new Chat(settings.chatlogPath)
+                {
+                    FloodProtection = settings.floodProtection
+                };
                 chat.OnNewMessage += Chat_OnNewMessage;
                 chat.OnChatStateChanged += Chat_OnChatStateChanged;
 

@@ -11,9 +11,9 @@ namespace CRMP_Auto_Calc
 {
     class Chat : IDisposable
     {
-        public bool chatOpened { get; private set; }
-        public bool isWork { get; private set; }
-        public bool floodProtection { get; set; }
+        public bool ChatOpened { get; private set; }
+        public bool IsWork { get; private set; }
+        public bool FloodProtection { get; set; }
 
         public delegate void NewMessage(ChatLine line);
         public event NewMessage OnNewMessage;
@@ -21,7 +21,7 @@ namespace CRMP_Auto_Calc
         public delegate void ChatStateChanged(bool isOpen);
         public event ChatStateChanged OnChatStateChanged;
 
-        private string chatlog;
+        private readonly string chatlog;
         private DateTime lastMsgTime;
         private Task globalHookTask;
 
@@ -29,13 +29,13 @@ namespace CRMP_Auto_Calc
         {
             if (!File.Exists(chatlog)) new FileNotFoundException("chatlog не найден");
             this.chatlog = chatlog;
-            this.isWork = false;
-            this.floodProtection = false;
+            this.IsWork = false;
+            this.FloodProtection = false;
 
             globalHookTask = new Task(() =>
             {
                 IKeyboardEvents hook = Hook.GlobalEvents();
-                hook.KeyUp += hook_KeyUp;
+                hook.KeyUp += Hook_KeyUp;
                 Application.Run();
                 MessageBox.Show("HW");
             });
@@ -43,32 +43,32 @@ namespace CRMP_Auto_Calc
             globalHookTask.Start();
         }
 
-        private void hook_KeyUp(object sender, KeyEventArgs e)
+        private void Hook_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!isWork) return;
+            if (!IsWork) return;
 
             if (e.KeyCode == Keys.F6)
             {
-                chatOpened = !chatOpened;
-                OnChatStateChanged(chatOpened);
+                ChatOpened = !ChatOpened;
+                OnChatStateChanged(ChatOpened);
             }
-            else if (chatOpened && e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+            else if (ChatOpened && e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
             {
-                chatOpened = false;
-                OnChatStateChanged(chatOpened);
+                ChatOpened = false;
+                OnChatStateChanged(ChatOpened);
                 if (e.KeyCode == Keys.Enter) lastMsgTime = DateTime.Now;
             }
         }
 
         public void SendMsg(string msg, int senderMode)
         {
-            if(floodProtection)
+            if(FloodProtection)
             {
                 TimeSpan t = DateTime.Now - lastMsgTime;
                 if (t.TotalSeconds < 1.5) Thread.Sleep(1000);
             }
 
-            if (chatOpened)
+            if (ChatOpened)
             {
                 switch (senderMode)
                 {
@@ -88,12 +88,12 @@ namespace CRMP_Auto_Calc
 
         public void Start()
         {
-            isWork = true;
-            chatOpened = false;
+            IsWork = true;
+            ChatOpened = false;
             using (StreamReader reader = new StreamReader(File.Open(chatlog, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.GetEncoding(1251)))
             {
                 reader.BaseStream.Position = reader.BaseStream.Length;
-                while(isWork)
+                while(IsWork)
                 {
                     string line = reader.ReadLine();
                     if (line == null || line == "") continue;
@@ -105,11 +105,11 @@ namespace CRMP_Auto_Calc
 
         public void StartAsync() => new Task(() => Start()).Start();
 
-        public void Stop() => isWork = false;
+        public void Stop() => IsWork = false;
 
         public void Dispose()
         {
-            isWork = false;
+            IsWork = false;
             Application.Exit();
             ((IDisposable)globalHookTask).Dispose();
         }
