@@ -242,9 +242,6 @@ namespace CRMP_Auto_Calc
                 Write("■\n", Green);
             }
 
-            File.Delete(settings.chatlogPath);
-            File.Create(settings.chatlogPath).Close();
-
             cancelTask.Start();
 
             if (settings.waitGame)
