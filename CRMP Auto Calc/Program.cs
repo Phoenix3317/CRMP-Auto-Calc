@@ -242,6 +242,9 @@ namespace CRMP_Auto_Calc
                 Write("■\n", Green);
             }
 
+            File.Delete(settings.chatlogPath);
+            File.Create(settings.chatlogPath).Close();
+
             cancelTask.Start();
 
             if (settings.waitGame)
@@ -302,6 +305,7 @@ namespace CRMP_Auto_Calc
             if (!int.TryParse(m.Groups["n1"].Value, out int n1) ||
                 !int.TryParse(m.Groups["n2"].Value, out int n2) ||
                 !m.Groups["l"].Success) return;
+            if (n1 == 0 && n2 == 0) return;
             int examplePos = line.WithoutColors().message.IndexOf(m.Value);
             if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns ? Black : Green, settings.usePatterns ? DarkYellow : Black));
             int answer = Solve(n1, n2, m.Groups["l"].Value);

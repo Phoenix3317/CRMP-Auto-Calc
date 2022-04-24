@@ -92,7 +92,7 @@ namespace CRMP_Auto_Calc
             ChatOpened = false;
             using (StreamReader reader = new StreamReader(File.Open(chatlog, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.GetEncoding(1251)))
             {
-                //reader.BaseStream.Position = reader.BaseStream.Length;
+                reader.BaseStream.Position = reader.BaseStream.Length;
                 while(IsWork)
                 {
                     string line = reader.ReadLine();
