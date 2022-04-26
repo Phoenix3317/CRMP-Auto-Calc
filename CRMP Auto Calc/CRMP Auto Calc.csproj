@@ -85,10 +85,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Chat.cs" />
-    <Compile Include="ConsoleExtended.v2.cs" />
+    <Compile Include="ConsoleExtended.v3.cs" />
     <Compile Include="Models\ChatLine.cs" />
     <Compile Include="Models\Pattern.cs" />
     <Compile Include="Models\Settings.cs" />
+    <Compile Include="PatternEditor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

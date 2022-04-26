@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using static Phoenix3317.ExtendedConsole.ExConsole;
 using static System.ConsoleColor;
 
@@ -15,8 +16,8 @@ namespace CRMP_Auto_Calc
 {
     class Program
     {
+        static List<Pattern> patterns = new List<Pattern>();
         static Settings settings;
-        static List<Pattern> patterns;
         static Chat chat;
 
         static bool patternsExists = false;
@@ -29,13 +30,8 @@ namespace CRMP_Auto_Calc
 
             try
             {
-                Write("Загрузка настроек ");
                 LoadSettings();
-                Write("■\n", Green);
-
-                Write("Загрузка шаблонов ");
                 LoadPatterns();
-                Write("■\n", Green);
 
                 chat = new Chat(settings.chatlogPath)
                 {
@@ -75,16 +71,21 @@ namespace CRMP_Auto_Calc
                             settings.copyChatlog = !settings.copyChatlog;
                             break;
 
-                        case ConsoleKey.D6:
+                        case ConsoleKey.D5:
                             settings.floodProtection = !settings.floodProtection;
                             break;
 
-                        case ConsoleKey.D5:
+                        case ConsoleKey.D6:
                             settings.usePatterns = !settings.usePatterns;
                             if (settings.usePatterns)
                             {
+                                Console.Clear();
                                 LoadPatterns();
                             }
+                            break;
+
+                        case ConsoleKey.D7:
+                            PatternEditor.Start(patterns);
                             break;
 
                         case ConsoleKey.S:
@@ -107,9 +108,29 @@ namespace CRMP_Auto_Calc
             }
             catch (Exception err)
             {
-                Write("■\n", Red);
-                Write($"-- {err.Message}\n{err.StackTrace}\n", DarkGray);
-                Console.ReadKey(true);
+                Console.Clear();
+
+                Write(new List<Text>()
+                {
+                    new Text("\n   "),
+                    new Text(" Ошибка ", White, DarkRed),
+                    new Text("   "),
+                    new Text($" {err.Source} \n", White, DarkBlue),
+                    new Text($"-- {err.Message}\n\n", White, DarkRed),
+                    new Text($"Нажмите любую клавишу...", DarkGray)
+                });
+
+                if (Console.ReadKey(true).Key == ConsoleKey.F10)
+                {
+                    Write(new List<Text>()
+                    {
+                        new Text("\n   "),
+                        new Text(" Stack trace ", White, DarkYellow),
+                        new Text($"\n{err.StackTrace}\n\n", Black, DarkYellow),
+                        new Text($"Нажмите любую клавишу...", DarkGray)
+                    });
+                    Console.ReadKey(true);
+                }
             }
         }
 
@@ -164,14 +185,14 @@ namespace CRMP_Auto_Calc
 
             Write(new List<Text>
             {
-                new Text(" 6  | ", DarkGray),
+                new Text(" 5  | ", DarkGray),
                 new Text("Защита от флуда "),
                 new Text($"■\n\n", settings.floodProtection ? Green : Red)
             });
 
             Write(new List<Text>
             {
-                new Text(" 5  | ", DarkGray),
+                new Text(" 6  | ", DarkGray),
                 new Text("Использовать шаблоны "),
                 new Text("(patterns.txt) ", DarkGray),
                 new Text($"■", settings.usePatterns ? Green : Red),
@@ -186,9 +207,19 @@ namespace CRMP_Auto_Calc
                 });
             }
 
+            if (settings.usePatterns && patterns != null && patterns.Count > 0)
+            {
+                Write(new List<Text>()
+                {
+                    new Text("\n\n 7  | ", DarkGray),
+                    new Text("Редактор шаблонов\n", Cyan),
+                });
+            }
+            else Write("\n\n");
+
             Write(new List<Text>()
             {
-                new Text("\n\n S  | ", DarkGray),
+                new Text(" S  | ", DarkGray),
                 new Text("Сохранить настройки\n", Cyan),
 
                 new Text(" R  | ", DarkGray),
@@ -204,21 +235,48 @@ namespace CRMP_Auto_Calc
 
         static void LoadSettings()
         {
-            if (File.Exists("settings.json"))
+            Write("Загрузка настроек ");
+            Write("■", Yellow);
+            try
             {
-                settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
+                if (File.Exists("settings.json"))
+                {
+                    settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
+                }
+                else settings = new Settings();
+                WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Green));
             }
-            else settings = new Settings();
+            catch (Exception err)
+            {
+                WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Red));
+                Write($" -- {err.Message}\n\nНажмите любую клавишу...\nБудут применены настройки по умолчанию.\n\n", DarkGray);
+                Console.ReadKey(true);
+                settings = new Settings();
+            }
         }
 
         static void LoadPatterns()
         {
-            if (File.Exists("patterns.json"))
+            Write("Загрузка шаблонов ");
+            Write("■", Yellow);
+            try
             {
-                patternsExists = true;
-                patterns = JsonConvert.DeserializeObject<List<Pattern>>(File.ReadAllText("patterns.json"));
+                patterns = new List<Pattern>();
+                if (File.Exists("patterns.json"))
+                {
+                    patternsExists = true;
+                    patterns = JsonConvert.DeserializeObject<List<Pattern>>(File.ReadAllText("patterns.json"));
+                }
+                else patternsExists = false;
+                WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Green));
             }
-            else patternsExists = false;
+            catch (Exception err)
+            {
+                WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Red));
+                Write($" -- {err.Message}\n\nНажмите любую клавишу...\nШаблоны будут отключены.\n\n", DarkGray);
+                Console.ReadKey(true);
+                settings.usePatterns = false;
+            }
         }
 
         static void StartCalc()
@@ -305,8 +363,10 @@ namespace CRMP_Auto_Calc
             if (n1 == 0 && n2 == 0) return;
             int examplePos = line.WithoutColors().message.IndexOf(m.Value);
             if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns ? Black : Green, settings.usePatterns ? DarkYellow : Black));
-            int answer = Solve(n1, n2, m.Groups["l"].Value);
-            Write(MakeDividedText($" {answer.ToString()} "), Magenta);
+            string answer = Solve(n1, n2, m.Groups["l"].Value).ToString();
+            Write(MakeDividedText($" {answer} "), Magenta);
+
+            if (pattern.answer != "") answer = pattern.answer.Replace("%answer%", answer);
 
             if (pattern.sendMode == 0) Clipboard.SetText(answer.ToString());
             else
