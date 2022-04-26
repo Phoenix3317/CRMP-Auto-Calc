@@ -54,10 +54,13 @@ namespace CRMP_Auto_Calc
 
                 Write(new List<Text>()
                 {
-                    new Text(" N  | ", DarkGray),
+                    new Text(" A  | ", DarkGray),
                     new Text("Новый шаблон\n"),
 
-                    new Text(" D  | ", DarkGray),
+                    new Text(" DEL| ", DarkGray),
+                    new Text("Удалить шаблон\n"),
+
+                    new Text(" С  | ", DarkGray),
                     new Text("Копировать шаблон\n"),
 
                     new Text(" E  | ", DarkGray),
@@ -77,7 +80,7 @@ namespace CRMP_Auto_Calc
 
                 switch(key)
                 {
-                    case ConsoleKey.N:
+                    case ConsoleKey.A:
                         patterns.Add(new Pattern());
                         break;
 
@@ -137,8 +140,14 @@ namespace CRMP_Auto_Calc
                         sPattern.sendMode = sPattern.sendMode == 0 ? 1 : 0;
                         break;
 
-                    case ConsoleKey.D:
+                    case ConsoleKey.C:
                         patterns.Add(patterns[selectedPattern]);
+                        break;
+
+                    case ConsoleKey.Delete:
+                        Write("Чтобы удалить, нажмите Y\n", White, Red);
+                        Write("Или иную клавишу, чтобы вернуться");
+                        if (Console.ReadKey(true).Key == ConsoleKey.Y) patterns.RemoveAt(selectedPattern);
                         break;
                 }
             }
