@@ -1,3 +1,7 @@
+# v1.1.7
+## Added
+- Settings field "use only patterns".
+
 # v1.1.6
 ## Added
 - "ignoreCase" in pattern structure (patterns.json). Now pattern can ignoring letter case.

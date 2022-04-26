@@ -85,6 +85,10 @@ namespace CRMP_Auto_Calc
                             break;
 
                         case ConsoleKey.D7:
+                            settings.onlyPatterns = !settings.onlyPatterns;
+                            break;
+
+                        case ConsoleKey.D8:
                             PatternEditor.Start(patterns);
                             break;
 
@@ -195,7 +199,7 @@ namespace CRMP_Auto_Calc
                 new Text(" 6  | ", DarkGray),
                 new Text("Использовать шаблоны "),
                 new Text("(patterns.txt) ", DarkGray),
-                new Text($"■", settings.usePatterns ? Green : Red),
+                new Text("■", settings.usePatterns ? Green : Red),
             });
 
             if (settings.usePatterns)
@@ -205,13 +209,20 @@ namespace CRMP_Auto_Calc
                     new Text(patternsExists ? " -- загружено шаблонов: " : " -- шаблоны не найдены", DarkGray),
                     new Text(patternsExists ? $"{patterns.Count}" : "", Gray),
                 });
+
+                Write(new List<Text>()
+                {
+                    new Text("\n 7  | ", DarkGray),
+                    new Text("Использовать только шаблоны "),
+                    new Text("■", settings.onlyPatterns ? Green : Red)
+                });
             }
 
             if (settings.usePatterns && patterns != null && patterns.Count > 0)
             {
                 Write(new List<Text>()
                 {
-                    new Text("\n\n 7  | ", DarkGray),
+                    new Text("\n\n 8wd  | ", DarkGray),
                     new Text("Редактор шаблонов\n", Cyan),
                 });
             }
@@ -344,15 +355,18 @@ namespace CRMP_Auto_Calc
                     }
                 });
 
-                if (pattern == null) return;
+                if (settings.onlyPatterns && pattern == null) return;
             }
 
-            pattern = new Pattern()
+            if (pattern == null)
             {
-                pattern = @"\d+\s[\+\-\*\/]\s\d+",
-                sendMode = settings.senderType,
-                answerDelay = settings.answerDelay
-            };
+                pattern = new Pattern()
+                {
+                    pattern = @"\d+\s[\+\-\*\/]\s\d+",
+                    sendMode = settings.senderType,
+                    answerDelay = settings.answerDelay
+                };
+            }
 
             Match m = Regex.Match(line.WithoutColors().message, @"(?<n1>\d+)\s*(?<l>[\+\-\*\/])\s*(?<n2>\d+)");
             if (!m.Success) return;
@@ -372,7 +386,7 @@ namespace CRMP_Auto_Calc
             else
             {
                 Thread.Sleep(pattern.answerDelay);
-                chat.SendMsg(answer.ToString(), settings.chatOpened);
+                chat.SendMsg(answer, settings.chatOpened);
             }
         }
 

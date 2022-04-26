@@ -13,6 +13,7 @@ namespace CRMP_Auto_Calc.Models
         public bool floodProtection = false;
         public bool usePatterns = false;
         public bool waitGame = true;
+        public bool onlyPatterns = false;
 
         /// <summary>
         /// 0 - copy answer to clipboard
