@@ -16,8 +16,10 @@ namespace CRMP_Auto_Calc
 {
     class Program
     {
+        public static Settings settings;
+
         static List<Pattern> patterns = new List<Pattern>();
-        static Settings settings;
+        static Process game;
         static Chat chat;
 
         static bool patternsExists = false;
@@ -222,7 +224,7 @@ namespace CRMP_Auto_Calc
             {
                 Write(new List<Text>()
                 {
-                    new Text("\n\n 8wd  | ", DarkGray),
+                    new Text("\n\n 8  | ", DarkGray),
                     new Text("Редактор шаблонов\n", Cyan),
                 });
             }
@@ -301,7 +303,16 @@ namespace CRMP_Auto_Calc
                 {
                     if (Console.ReadKey(true).Key == ConsoleKey.Escape) isWork = false;
                 }
+
                 if (chat.IsWork) chat.Stop();
+            });
+
+            Task gameWatcherTask = new Task(() =>
+            {
+                while (isWork)
+                {
+                    if (!game.HasExited) isWork = false;
+                }
             });
 
             if (settings.copyChatlog)
@@ -318,6 +329,8 @@ namespace CRMP_Auto_Calc
                 Write("Ожидание запуска игры ");
                 if (!WaitProcess(settings.gameName, ref isWork)) return;
                 Write("■\n", Green);
+
+                gameWatcherTask.Start();
             }
 
             Write("Чтобы остановить, нажмите ESC\n\n", Gray);
@@ -328,9 +341,21 @@ namespace CRMP_Auto_Calc
         {
             while (isWork)
             {
-                if (Process.GetProcessesByName(process).Length > 0) return true;
+                Process[] prcList = Process.GetProcessesByName(process);
+                if (prcList.Length > 0 && !prcList[0].HasExited)
+                {
+                    game = prcList[0];
+                    WaitChatlogChanged();
+                    return true;
+                }
             }
             return false;
+        }
+
+        static void WaitChatlogChanged()
+        {
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(settings.chatlogPath), Path.GetFileName(settings.chatlogPath));
+            watcher.WaitForChanged(WatcherChangeTypes.Changed);
         }
 
         static void Chat_OnChatStateChanged(bool isOpen)
@@ -358,27 +383,24 @@ namespace CRMP_Auto_Calc
                 if (settings.onlyPatterns && pattern == null) return;
             }
 
+            if (!Calc.Solve(line.WithoutColors().message, out long result)) return;
+
+            Match m = Calc.LastFullExample;
+            int examplePos = line.WithoutColors().message.IndexOf(m.Value);
+            if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns && pattern != null ? Black : Green, settings.usePatterns && pattern != null ? DarkYellow : Black));
+
+            string answer = result.ToString();
+
             if (pattern == null)
             {
                 pattern = new Pattern()
                 {
-                    pattern = @"\d+\s[\+\-\*\/]\s\d+",
-                    sendMode = settings.senderType,
-                    answerDelay = settings.answerDelay
+                    pattern = ".*",
+                    answer = "",
+                    answerDelay = settings.answerDelay,
+                    sendMode = settings.senderType
                 };
             }
-
-            Match m = Regex.Match(line.WithoutColors().message, @"(?<n1>\d+)\s*(?<l>[\+\-\*\/])\s*(?<n2>\d+)");
-            if (!m.Success) return;
-            if (m.Groups.Count < 3) return;
-            if (!int.TryParse(m.Groups["n1"].Value, out int n1) ||
-                !int.TryParse(m.Groups["n2"].Value, out int n2) ||
-                !m.Groups["l"].Success) return;
-            if (n1 == 0 && n2 == 0) return;
-            int examplePos = line.WithoutColors().message.IndexOf(m.Value);
-            if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns ? Black : Green, settings.usePatterns ? DarkYellow : Black));
-            string answer = Solve(n1, n2, m.Groups["l"].Value).ToString();
-            Write(MakeDividedText($" {answer} "), Magenta);
 
             if (pattern.answer != "") answer = pattern.answer.Replace("%answer%", answer);
 
@@ -388,20 +410,7 @@ namespace CRMP_Auto_Calc
                 Thread.Sleep(pattern.answerDelay);
                 chat.SendMsg(answer, settings.chatOpened);
             }
-        }
-
-        static int Solve(int n1, int n2, string l)
-        {
-            switch (l)
-            {
-                case "+": return n1 + n2;
-                case "-": return n1 - n2;
-                case "*": return n1 * n2;
-                case "/": return n1 / n2;
-                case "^": return n1 ^ n2;
-                case "%": return n1 % n2;
-                default: return n1 + n2;
-            }
+            Write(MakeDividedText($" {answer} "), Magenta);
         }
     }
 }

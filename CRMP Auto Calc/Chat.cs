@@ -73,11 +73,11 @@ namespace CRMP_Auto_Calc
                 switch (senderMode)
                 {
                     case 0: return;
-                    case 1: Send($"^(a) {msg} {{ENTER}}"); break;
-                    case 2: Send($"^(a) {msg} {{ENTER}} {{F6}}"); break;
+                    case 1: Send($"^(A) ({msg}) {{ENTER}}"); break;
+                    case 2: Send($"^(A) ({msg}) {{ENTER}} {{F6}}"); break;
                 }
             }
-            else Send($"{{F6}} ^(a) {msg} {{ENTER}}");
+            else Send($"{{F6}} ^(A) {msg} {{ENTER}}");
         }
 
         public void Send(string keys)
@@ -93,7 +93,7 @@ namespace CRMP_Auto_Calc
             using (StreamReader reader = new StreamReader(File.Open(chatlog, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.GetEncoding(1251)))
             {
                 reader.BaseStream.Position = reader.BaseStream.Length;
-                while(IsWork)
+                while (IsWork)
                 {
                     string line = reader.ReadLine();
                     if (line == null || line == "") continue;

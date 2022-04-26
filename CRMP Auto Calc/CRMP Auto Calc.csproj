@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Calc.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="ConsoleExtended.v3.cs" />
     <Compile Include="Models\ChatLine.cs" />
