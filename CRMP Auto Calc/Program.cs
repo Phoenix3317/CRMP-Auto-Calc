@@ -337,7 +337,7 @@ namespace CRMP_Auto_Calc
             {
                 patterns.ForEach(p =>
                 {
-                    if (Regex.Match(line.WithoutColors().message, p.pattern).Success)
+                    if (Regex.Match(line.WithoutColors().message, p.pattern, p.ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None).Success)
                     {
                         pattern = p;
                         return;

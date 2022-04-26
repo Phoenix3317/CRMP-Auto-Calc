@@ -1,6 +1,10 @@
+# v1.1.6
+## Added
+- "ignoreCase" in pattern structure (patterns.json). Now pattern can ignoring letter case.
+
 # v1.1.5
-## Features
-- Patterns editor can delete patterns
+## Fixes
+- Now patterns editor can delete patterns
 
 # v1.1.4
 ## Fixes
