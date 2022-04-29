@@ -40,25 +40,25 @@ namespace CRMP_Auto_Calc
                 if (!long.TryParse(m.Groups["n1"].Value, out long n1) ||
                     !long.TryParse(m.Groups["n2"].Value, out long n2) ||
                     !m.Groups["l"].Success) return false;
-                string answer = Solve(n1, n2, m.Groups["l"].Value);
+                string answer = Solve(n1, n2, m.Groups["l"].Value).ToString();
                 full = full.Replace(m.Value, answer);
             }
 
-            return true;
+            return true; 
         }
 
-        public static string Solve(long n1, long n2, string operation)
+        public static long Solve(long n1, long n2, string operation)
         {
             switch (operation)
             {
-                case "+": return (n1 + n1).ToString();
-                case "-": return (n1 - n1).ToString();
-                case "*": return (n1 * n1).ToString();
-                case "/": return (n1 / n1).ToString();
-                case "^": return Math.Pow(n1, n2).ToString();
-                case "%": return Math.Round((double)(n1 * n1 / 100)).ToString();
-                case "ost": return Math.IEEERemainder(n1, n2).ToString();
-                default: return "";
+                case "+": return n1 + n2;
+                case "-": return n1 - n2;
+                case "*": return n1 * n2;
+                case "/": return n1 / n2;
+                case "^": return (long)Math.Pow(n1, n2);
+                case "%": return (long)Math.Round((double)(n1 * n2 / 100));
+                case "ost": return (long)Math.IEEERemainder(n1, n2);
+                default: return 0;
             }
         }
     }

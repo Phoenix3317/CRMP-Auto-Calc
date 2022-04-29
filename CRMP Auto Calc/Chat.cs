@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Gma.System.MouseKeyHook;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace CRMP_Auto_Calc
 {
@@ -73,11 +74,11 @@ namespace CRMP_Auto_Calc
                 switch (senderMode)
                 {
                     case 0: return;
-                    case 1: Send($"^(A) ({msg}) {{ENTER}}"); break;
-                    case 2: Send($"^(A) ({msg}) {{ENTER}} {{F6}}"); break;
+                    case 1: Send($"^(a){msg}{{ENTER}}"); break;
+                    case 2: Send($"^(a){msg}{{ENTER}}{{F6}}"); break;
                 }
             }
-            else Send($"{{F6}} ^(A) {msg} {{ENTER}}");
+            else Send($"{{F6}}^(a){msg}{{ENTER}}");
         }
 
         public void Send(string keys)
@@ -85,6 +86,8 @@ namespace CRMP_Auto_Calc
             lastMsgTime = DateTime.Now;
             SendKeys.SendWait(keys);
         }
+
+        public void Send(List<string> keys) => keys.ForEach(key => Send(key));
 
         public void Start()
         {

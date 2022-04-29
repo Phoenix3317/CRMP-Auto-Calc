@@ -220,6 +220,8 @@ namespace CRMP_Auto_Calc
             chat.Start();
 
             isWork = false;
+            Write("\nНажмите любую клавишу...", Yellow);
+            Console.ReadKey(true);
         }
 
         static bool WaitProcess(string process, ref bool isWork)
