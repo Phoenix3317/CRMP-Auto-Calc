@@ -1,3 +1,11 @@
+# v1.2.0
+## Fixes
+- Now the examples are solved correctly
+- Now multiplication and division are solved first
+- Now waiting for the game is working correctly
+- Now the calc closes with the game
+- Other minor fixes & changes
+
 # v1.1.9
 ## Added
 - Support for large numbers (long instead of int)

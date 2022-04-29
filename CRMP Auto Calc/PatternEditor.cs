@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
-using CRMP_Auto_Calc.Models;
 using Newtonsoft.Json;
+using CRMP_Auto_Calc.Models;
+
 using static System.ConsoleColor;
 using static Phoenix3317.ExtendedConsole.ExConsole;
 
@@ -13,7 +13,7 @@ namespace CRMP_Auto_Calc
     {
         public static List<Pattern> patterns = new List<Pattern>();
 
-        private static int selectedPattern = -1;
+        private static int selectedPattern = 0;
         private static Pattern sPattern
         {
             get
@@ -40,41 +40,10 @@ namespace CRMP_Auto_Calc
                     int index = patterns.IndexOf(pattern);
                     bool selected = index == selectedPattern;
 
-                    Write(new List<Text>()
-                    {
-                        new Text($"{(selected ? "0 | " : "")}#{index}| {pattern.pattern}\n", Black, selected ? DarkGreen : DarkYellow),
-                        new Text($"{(selected ? "1 | " : "")}Ответ: "),
-                        new Text(pattern.answer == "" ? "%answer%\n" : $"{pattern.answer}\n", Yellow),
-                        new Text($"{(selected ? "2 | " : "")}Задержка ответа: "),
-                        new Text($"{pattern.answerDelay}ms\n", Yellow),
-                        new Text($"{(selected ? "3 | " : "")}Отправлять ответ в "),
-                        new Text(pattern.sendMode == 0 ? "буфер обмена\n\n" : "чат\n\n", Yellow)
-                    });
+                    Visual.DrawPattern(pattern, index, selected);
                 });
 
-                Write(new List<Text>()
-                {
-                    new Text(" A  | ", DarkGray),
-                    new Text("Новый шаблон\n"),
-
-                    new Text(" DEL| ", DarkGray),
-                    new Text("Удалить шаблон\n"),
-
-                    new Text(" С  | ", DarkGray),
-                    new Text("Копировать шаблон\n"),
-
-                    new Text(" E  | ", DarkGray),
-                    new Text("Выбрать шаблон\n"),
-
-                    new Text(" ENT| ", DarkGray),
-                    new Text("Снять выделение\n"),
-
-                    new Text(" S  | ", DarkGray),
-                    new Text("Сохранить шаблоны\n"),
-
-                    new Text(" ESC| ", DarkGray),
-                    new Text("Выход\n", Red),
-                });
+                Visual.DrawPatternsEditorMenu();
 
                 key = Console.ReadKey(true).Key;
 
@@ -94,10 +63,6 @@ namespace CRMP_Auto_Calc
                         else selectedPattern = index;
                         break;
 
-                    case ConsoleKey.Enter:
-                        selectedPattern = -1;
-                        break;
-
                     case ConsoleKey.S:
                         Save();
                         break;
@@ -112,8 +77,6 @@ namespace CRMP_Auto_Calc
                         selectedPattern = selectedPattern >= patterns.Count - 1 ? 0 : selectedPattern + 1;
                         break;
                 }
-
-                if (selectedPattern < 0) continue;
 
                 switch(key)
                 {

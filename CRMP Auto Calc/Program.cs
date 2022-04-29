@@ -16,13 +16,12 @@ namespace CRMP_Auto_Calc
 {
     class Program
     {
-        public static Settings settings;
+        public static Settings settings = new Settings();
+        public static List<Pattern> patterns = new List<Pattern>();
+        public static bool patternsExists = false;
 
-        static List<Pattern> patterns = new List<Pattern>();
         static Process game;
         static Chat chat;
-
-        static bool patternsExists = false;
 
         [STAThread]
         static void Main(string[] args)
@@ -45,8 +44,8 @@ namespace CRMP_Auto_Calc
                 while (true)
                 {
                     Console.Clear();
-                    DrawLogo();
-                    DrawMenu();
+                    Visual.DrawLogo();
+                    Visual.DrawMenu();
 
                     switch (Console.ReadKey(true).Key)
                     {
@@ -115,18 +114,9 @@ namespace CRMP_Auto_Calc
             catch (Exception err)
             {
                 Console.Clear();
+                Visual.DrawException(err, out ConsoleKeyInfo key);
 
-                Write(new List<Text>()
-                {
-                    new Text("\n   "),
-                    new Text(" Ошибка ", White, DarkRed),
-                    new Text("   "),
-                    new Text($" {err.Source} \n", White, DarkBlue),
-                    new Text($"-- {err.Message}\n\n", White, DarkRed),
-                    new Text($"Нажмите любую клавишу...", DarkGray)
-                });
-
-                if (Console.ReadKey(true).Key == ConsoleKey.F10)
+                if (key.Key == ConsoleKey.F10)
                 {
                     Write(new List<Text>()
                     {
@@ -140,112 +130,6 @@ namespace CRMP_Auto_Calc
             }
         }
 
-        static void DrawLogo()
-        {
-            Write(new List<Text>()
-            {
-                new Text("┌───────────────────┐\n", Gray),
-                new Text("│", Gray),
-                new Text("CRMP ", White),
-                new Text("AUTO ", Blue),
-                new Text("CALC     ", Red),
-                new Text("│\n│", Gray),
-                new Text(" Turn off the brain", DarkGray),
-                new Text("│\n└───────────────────┘\n\n", Gray)
-            });
-        }
-
-        static void DrawMenu()
-        {
-            string param = "";
-            Write(new List<Text>
-            {
-                new Text(" 1  | ", DarkGray),
-                new Text("Отправлять ответ в "),
-                new Text($"{(settings.senderType == 0 ? "буфер обмена" : "чат")}\n", Yellow)
-            });
-
-            param = "ничего не делать";
-            if (settings.chatOpened != 0) param = settings.chatOpened == 1 ? "отправить ответ и закрыть чат" : "отправить ответ и вновь открыть чат";
-
-            Write(new List<Text>
-            {
-                new Text(" 2  | ", DarkGray),
-                new Text("Если чат открыт, то ", settings.senderType == 1 ? White : DarkGray),
-                new Text(param + "\n", settings.senderType == 1 ? Yellow : DarkGray)
-            });
-
-            Write(new List<Text>
-            {
-                new Text(" 3  | ", DarkGray),
-                new Text("Задержка отправки ответа = "),
-                new Text($"{settings.answerDelay} ms\n", Yellow)
-            });
-
-            Write(new List<Text>
-            {
-                new Text(" 4  | ", DarkGray),
-                new Text("Сохранять копию чата "),
-                new Text($"■\n", settings.copyChatlog ? Green : Red)
-            });
-
-            Write(new List<Text>
-            {
-                new Text(" 5  | ", DarkGray),
-                new Text("Защита от флуда "),
-                new Text($"■\n\n", settings.floodProtection ? Green : Red)
-            });
-
-            Write(new List<Text>
-            {
-                new Text(" 6  | ", DarkGray),
-                new Text("Использовать шаблоны "),
-                new Text("(patterns.txt) ", DarkGray),
-                new Text("■", settings.usePatterns ? Green : Red),
-            });
-
-            if (settings.usePatterns)
-            {
-                Write(new List<Text>
-                {
-                    new Text(patternsExists ? " -- загружено шаблонов: " : " -- шаблоны не найдены", DarkGray),
-                    new Text(patternsExists ? $"{patterns.Count}" : "", Gray),
-                });
-
-                Write(new List<Text>()
-                {
-                    new Text("\n 7  | ", DarkGray),
-                    new Text("Использовать только шаблоны "),
-                    new Text("■", settings.onlyPatterns ? Green : Red)
-                });
-            }
-
-            if (settings.usePatterns && patterns != null && patterns.Count > 0)
-            {
-                Write(new List<Text>()
-                {
-                    new Text("\n\n 8  | ", DarkGray),
-                    new Text("Редактор шаблонов\n", Cyan),
-                });
-            }
-            else Write("\n\n");
-
-            Write(new List<Text>()
-            {
-                new Text(" S  | ", DarkGray),
-                new Text("Сохранить настройки\n", Cyan),
-
-                new Text(" R  | ", DarkGray),
-                new Text("Сбросить настройки\n", Cyan),
-
-                new Text(" ENT| ", DarkGray),
-                new Text("Запустить Auto Calc\n", Cyan),
-
-                new Text(" ESC| ", DarkGray),
-                new Text("Выход\n\n", Red)
-            });
-        }
-
         static void LoadSettings()
         {
             Write("Загрузка настроек ");
@@ -256,7 +140,6 @@ namespace CRMP_Auto_Calc
                 {
                     settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
                 }
-                else settings = new Settings();
                 WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Green));
             }
             catch (Exception err)
@@ -264,7 +147,6 @@ namespace CRMP_Auto_Calc
                 WriteFrom(Console.CursorLeft - 1, Console.CursorTop, new Text("■\n", Red));
                 Write($" -- {err.Message}\n\nНажмите любую клавишу...\nБудут применены настройки по умолчанию.\n\n", DarkGray);
                 Console.ReadKey(true);
-                settings = new Settings();
             }
         }
 
@@ -311,7 +193,8 @@ namespace CRMP_Auto_Calc
             {
                 while (isWork)
                 {
-                    if (!game.HasExited) isWork = false;
+                    if (game.HasExited) chat.Stop();
+                    Thread.Sleep(500);
                 }
             });
 
@@ -335,6 +218,8 @@ namespace CRMP_Auto_Calc
 
             Write("Чтобы остановить, нажмите ESC\n\n", Gray);
             chat.Start();
+
+            isWork = false;
         }
 
         static bool WaitProcess(string process, ref bool isWork)
@@ -345,17 +230,12 @@ namespace CRMP_Auto_Calc
                 if (prcList.Length > 0 && !prcList[0].HasExited)
                 {
                     game = prcList[0];
-                    WaitChatlogChanged();
                     return true;
                 }
+
+                Thread.Sleep(500);
             }
             return false;
-        }
-
-        static void WaitChatlogChanged()
-        {
-            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(settings.chatlogPath), Path.GetFileName(settings.chatlogPath));
-            watcher.WaitForChanged(WatcherChangeTypes.Changed);
         }
 
         static void Chat_OnChatStateChanged(bool isOpen)
