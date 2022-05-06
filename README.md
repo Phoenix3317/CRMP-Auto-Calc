@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/kvvr9tyf9s8e4b9p?svg=true)](https://ci.appveyor.com/project/Phoenix3317/crmp-auto-calc)  
+
 ## CRMP-Auto-Calc 
 В автоматическом режиме решает примеры из чата для игры CRMP. Может пригодиться для решения викторин и зарабатывания на этом денег.  
 
