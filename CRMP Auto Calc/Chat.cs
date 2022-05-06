@@ -38,7 +38,6 @@ namespace CRMP_Auto_Calc
                 IKeyboardEvents hook = Hook.GlobalEvents();
                 hook.KeyUp += Hook_KeyUp;
                 Application.Run();
-                MessageBox.Show("HW");
             });
 
             globalHookTask.Start();
@@ -48,17 +47,19 @@ namespace CRMP_Auto_Calc
         {
             if (!IsWork) return;
 
-            if (e.KeyCode == Keys.F6)
-            {
-                ChatOpened = !ChatOpened;
-                OnChatStateChanged(ChatOpened);
-            }
+            if (e.KeyCode == Keys.F6) SetChatState(!ChatOpened);
+            else if (e.KeyCode == Keys.R && e.Control) SetChatState(false);
             else if (ChatOpened && e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
             {
-                ChatOpened = false;
-                OnChatStateChanged(ChatOpened);
+                SetChatState(false);
                 if (e.KeyCode == Keys.Enter) lastMsgTime = DateTime.Now;
             }
+        }
+
+        public void SetChatState(bool isOpen)
+        {
+            ChatOpened = isOpen;
+            OnChatStateChanged(ChatOpened);
         }
 
         public void SendMsg(string msg, int senderMode)
@@ -74,11 +75,11 @@ namespace CRMP_Auto_Calc
                 switch (senderMode)
                 {
                     case 0: return;
-                    case 1: Send($"^(a){msg}{{ENTER}}"); break;
-                    case 2: Send($"^(a){msg}{{ENTER}}{{F6}}"); break;
+                    case 1: Send($"{{HOME}}+({{END}}){msg}{{ENTER}}"); break;
+                    case 2: Send($"{{HOME}}+({{END}}){msg}{{ENTER}}{{F6}}"); break;
                 }
             }
-            else Send($"{{F6}}^(a){msg}{{ENTER}}");
+            else Send($"{{F6}}{{HOME}}+({{END}}){msg}{{ENTER}}");
         }
 
         public void Send(string keys)
@@ -87,7 +88,10 @@ namespace CRMP_Auto_Calc
             SendKeys.SendWait(keys);
         }
 
-        public void Send(List<string> keys) => keys.ForEach(key => Send(key));
+        public void Send(List<string> keys, int sleep = 0) => keys.ForEach(key => {
+            Send(key);
+            Thread.Sleep(sleep);
+        });
 
         public void Start()
         {

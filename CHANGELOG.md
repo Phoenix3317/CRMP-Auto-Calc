@@ -1,3 +1,8 @@
+# v1.2.1
+## Fixes 
+- Fixed an error when the letter "A" was sent along with the answer
+- Fixed the mechanism of the waiting for game. 
+
 # v1.2.0
 ## Fixes
 - Now the examples are solved correctly

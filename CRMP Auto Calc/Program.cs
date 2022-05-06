@@ -179,21 +179,11 @@ namespace CRMP_Auto_Calc
             Console.Clear();
             bool isWork = true;
 
-            Task cancelTask = new Task(() =>
-            {
-                while (isWork)
-                {
-                    if (Console.ReadKey(true).Key == ConsoleKey.Escape) isWork = false;
-                }
-
-                if (chat.IsWork) chat.Stop();
-            });
-
             Task gameWatcherTask = new Task(() =>
             {
                 while (isWork)
                 {
-                    if (game.HasExited) chat.Stop();
+                    if (game.HasExited) isWork = false;
                     Thread.Sleep(500);
                 }
             });
@@ -205,38 +195,47 @@ namespace CRMP_Auto_Calc
                 Write("■\n", Green);
             }
 
-            cancelTask.Start();
-
             if (settings.waitGame)
             {
                 Write("Ожидание запуска игры ");
-                if (!WaitProcess(settings.gameName, ref isWork)) return;
+                if (!WaitGame(settings.gameName, ref isWork)) return;
                 Write("■\n", Green);
 
                 gameWatcherTask.Start();
             }
 
             Write("Чтобы остановить, нажмите ESC\n\n", Gray);
-            chat.Start();
+            chat.StartAsync();
+            
+            while (isWork)
+            {
+                if (Console.ReadKey(true).Key == ConsoleKey.Escape) isWork = false;
+            }
 
-            isWork = false;
-            Write("\nНажмите любую клавишу...", Yellow);
-            Console.ReadKey(true);
+            chat.Stop();
         }
 
-        static bool WaitProcess(string process, ref bool isWork)
+        static bool WaitGame(string process, ref bool isWork)
         {
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(settings.chatlogPath), Path.GetFileName(settings.chatlogPath));
+
             while (isWork)
             {
                 Process[] prcList = Process.GetProcessesByName(process);
                 if (prcList.Length > 0 && !prcList[0].HasExited)
                 {
-                    game = prcList[0];
-                    return true;
+                    WaitForChangedResult result = watcher.WaitForChanged(WatcherChangeTypes.Changed, 5000);
+
+                    if (!result.TimedOut)
+                    {
+                        game = prcList[0];
+                        return true;
+                    }
                 }
 
                 Thread.Sleep(500);
             }
+
             return false;
         }
 
