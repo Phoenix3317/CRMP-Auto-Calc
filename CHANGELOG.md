@@ -2,6 +2,10 @@
 ## Fixes 
 - Fixed an error when the letter "A" was sent along with the answer
 - Fixed the mechanism of the waiting for game. 
+## Added
+- Now you can turn on manual mode
+-- In manual mode, the response will be sent after pressing the key.
+- Now you can set a random answer delay (for example, from 700 to 1200 ms)
 
 # v1.2.0
 ## Fixes

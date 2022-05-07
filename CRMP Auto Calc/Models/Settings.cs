@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace CRMP_Auto_Calc.Models
 {
@@ -14,6 +15,8 @@ namespace CRMP_Auto_Calc.Models
         public bool usePatterns = false;
         public bool waitGame = true;
         public bool onlyPatterns = false;
+        public bool manualMode = false;
+        public Keys sendKey = Keys.Home;
 
         /// <summary>
         /// 0 - copy answer to clipboard
@@ -27,5 +30,7 @@ namespace CRMP_Auto_Calc.Models
         /// </summary>
         public int chatOpened = 2;
         public int answerDelay = 700;
+        public DelayRange answerRandomDelay = new DelayRange(700, 2000);
+        public bool useRandomDelay = false;
     }
 }

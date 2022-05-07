@@ -96,10 +96,26 @@ namespace CRMP_Auto_Calc
 
         public static void DrawMenu()
         {
-            string param = "";
+            string param, answerDelay;
+
             Write(new List<Text>
             {
                 new Text(" 1  | ", DarkGray),
+                new Text("Режим "),
+                new Text($"{(settings.manualMode ? "ручной" : "автоматический")}\n", Yellow)
+            });
+
+            if (settings.manualMode)
+            Write(new List<Text>
+            {
+                new Text(" F1 | ", DarkGray),
+                new Text("Клавиша отправки ответа "),
+                new Text($"{settings.sendKey}\n", Yellow)
+            });
+
+            Write(new List<Text>
+            {
+                new Text(" 2  | ", DarkGray),
                 new Text("Отправлять ответ в "),
                 new Text($"{(settings.senderType == 0 ? "буфер обмена" : "чат")}\n", Yellow)
             });
@@ -109,35 +125,39 @@ namespace CRMP_Auto_Calc
 
             Write(new List<Text>
             {
-                new Text(" 2  | ", DarkGray),
+                new Text(" 3  | ", DarkGray),
                 new Text("Если чат открыт, то ", settings.senderType == 1 ? White : DarkGray),
                 new Text(param + "\n", settings.senderType == 1 ? Yellow : DarkGray)
             });
 
+            answerDelay = $"{settings.answerDelay}мс";
+            if (settings.useRandomDelay) answerDelay = $"{settings.answerRandomDelay.Min}мс - {settings.answerRandomDelay.Max}мс";
+
+            if (!settings.manualMode)
             Write(new List<Text>
             {
-                new Text(" 3  | ", DarkGray),
+                new Text(" 4  | ", DarkGray),
                 new Text("Задержка отправки ответа = "),
-                new Text($"{settings.answerDelay} ms\n", Yellow)
+                new Text($"{answerDelay}\n", Yellow)
             });
 
             Write(new List<Text>
             {
-                new Text(" 4  | ", DarkGray),
+                new Text(" 5  | ", DarkGray),
                 new Text("Сохранять копию чата "),
                 new Text($"■\n", settings.copyChatlog ? Green : Red)
             });
 
             Write(new List<Text>
             {
-                new Text(" 5  | ", DarkGray),
+                new Text(" 6  | ", DarkGray),
                 new Text("Защита от флуда "),
                 new Text($"■\n\n", settings.floodProtection ? Green : Red)
             });
 
             Write(new List<Text>
             {
-                new Text(" 6  | ", DarkGray),
+                new Text(" 7  | ", DarkGray),
                 new Text("Использовать шаблоны "),
                 new Text("(patterns.txt) ", DarkGray),
                 new Text("■", settings.usePatterns ? Green : Red),
@@ -153,7 +173,7 @@ namespace CRMP_Auto_Calc
 
                 Write(new List<Text>()
                 {
-                    new Text("\n 7  | ", DarkGray),
+                    new Text("\n 8  | ", DarkGray),
                     new Text("Использовать только шаблоны "),
                     new Text("■", settings.onlyPatterns ? Green : Red)
                 });
@@ -163,7 +183,7 @@ namespace CRMP_Auto_Calc
             {
                 Write(new List<Text>()
                 {
-                    new Text("\n\n 8  | ", DarkGray),
+                    new Text("\n\n 9  | ", DarkGray),
                     new Text("Редактор шаблонов\n", Cyan),
                 });
             }

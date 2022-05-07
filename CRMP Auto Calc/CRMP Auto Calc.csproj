@@ -88,6 +88,7 @@
     <Compile Include="Chat.cs" />
     <Compile Include="ConsoleExtended.v3.cs" />
     <Compile Include="Models\ChatLine.cs" />
+    <Compile Include="Models\DelayRange.cs" />
     <Compile Include="Models\Pattern.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="PatternEditor.cs" />

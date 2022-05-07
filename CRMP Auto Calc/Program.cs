@@ -20,6 +20,11 @@ namespace CRMP_Auto_Calc
         public static List<Pattern> patterns = new List<Pattern>();
         public static bool patternsExists = false;
 
+        static int totalMessages = 0;
+        static int solvedExamples = 0;
+        static string lastExample = "";
+        static string answer = "";
+
         static Process game;
         static Chat chat;
 
@@ -40,6 +45,7 @@ namespace CRMP_Auto_Calc
                 };
                 chat.OnNewMessage += Chat_OnNewMessage;
                 chat.OnChatStateChanged += Chat_OnChatStateChanged;
+                chat.OnKeyPressed += Chat_OnKeyPressed;
 
                 while (true)
                 {
@@ -50,33 +56,50 @@ namespace CRMP_Auto_Calc
                     switch (Console.ReadKey(true).Key)
                     {
                         case ConsoleKey.D1:
-                            settings.senderType = settings.senderType == 0 ? 1 : 0;
+                            settings.manualMode = !settings.manualMode;
                             break;
 
                         case ConsoleKey.D2:
-                            settings.chatOpened = settings.chatOpened == 2 ? 0 : settings.chatOpened + 1;
+                            settings.senderType = settings.senderType == 0 ? 1 : 0;
                             break;
 
                         case ConsoleKey.D3:
-                            Write("ms > ", Cyan);
-                            if (!int.TryParse(Console.ReadLine(), out int delay) || delay < 0)
-                            {
-                                WriteAt(0, Console.CursorTop - 1, new Text("ms > ", Red));
-                                Write("\n-- задержка указывается положительным числом", DarkGray);
-                                Console.ReadKey(true);
-                            }
-                            else settings.answerDelay = delay;
+                            settings.chatOpened = settings.chatOpened == 2 ? 0 : settings.chatOpened + 1;
                             break;
 
                         case ConsoleKey.D4:
-                            settings.copyChatlog = !settings.copyChatlog;
+                            Write("ms > ", Cyan);
+
+                            string s = Console.ReadLine();
+                            if (s == "") break;
+
+                            if (DelayRange.TryParse(s, out DelayRange range))
+                            {
+                                settings.useRandomDelay = true;
+                                settings.answerRandomDelay = range;
+                            }
+                            else if (int.TryParse(s, out int delay))
+                            {
+                                settings.useRandomDelay = false;
+                                settings.answerDelay = delay;
+                            }
+                            else
+                            {
+                                WriteAt(0, Console.CursorTop - 1, new Text("ms > ", Red));
+                                Write("\n-- задержка должна быть положительным числом и указываться в мс (1000мс = 1сек)\n-- Чтобы использовать случайную задержку, введите два положительных числа, разделенных пробелом или '-' (700 1200).\n-- Первое число должно быть меньше второго!", DarkGray);
+                                Console.ReadKey(true);
+                            }
                             break;
 
                         case ConsoleKey.D5:
-                            settings.floodProtection = !settings.floodProtection;
+                            settings.copyChatlog = !settings.copyChatlog;
                             break;
 
                         case ConsoleKey.D6:
+                            settings.floodProtection = !settings.floodProtection;
+                            break;
+
+                        case ConsoleKey.D7:
                             settings.usePatterns = !settings.usePatterns;
                             if (settings.usePatterns)
                             {
@@ -85,11 +108,11 @@ namespace CRMP_Auto_Calc
                             }
                             break;
 
-                        case ConsoleKey.D7:
+                        case ConsoleKey.D8:
                             settings.onlyPatterns = !settings.onlyPatterns;
                             break;
 
-                        case ConsoleKey.D8:
+                        case ConsoleKey.D9:
                             PatternEditor.Start(patterns);
                             break;
 
@@ -107,6 +130,20 @@ namespace CRMP_Auto_Calc
 
                         case ConsoleKey.Escape:
                             Environment.Exit(0);
+                            break;
+
+                        case ConsoleKey.F1:
+                            Write("Клавиша > ", Cyan);
+                            Write("\n-- Нажмите любую клавишу, кроме ESC, Backspace, Delete, F6 и Enter");
+                            Console.SetCursorPosition(10, Console.CursorTop - 1);
+
+                            ConsoleKey key = Console.ReadKey().Key;
+                            if (key == ConsoleKey.Escape ||
+                                key == ConsoleKey.Backspace ||
+                                key == ConsoleKey.Delete ||
+                                key == ConsoleKey.F6 ||
+                                key == ConsoleKey.Enter) break;
+                            settings.sendKey = (Keys)key;
                             break;
                     }
                 }
@@ -126,6 +163,17 @@ namespace CRMP_Auto_Calc
                         new Text($"Нажмите любую клавишу...", DarkGray)
                     });
                     Console.ReadKey(true);
+                }
+            }
+        }
+
+        private static void Chat_OnKeyPressed(KeyEventArgs e)
+        {
+            if (settings.manualMode)
+            {
+                if (e.KeyCode == settings.sendKey)
+                {
+                    chat.SendMsg(answer, settings.chatOpened);
                 }
             }
         }
@@ -213,6 +261,22 @@ namespace CRMP_Auto_Calc
             }
 
             chat.Stop();
+
+            Write(new List<Text>()
+            {
+                new Text("Всего сообщений: "),
+                new Text($"{totalMessages}\n", Yellow),
+
+                new Text("Решено примеров: "),
+                new Text($"{solvedExamples}\n", Yellow),
+
+                new Text("Последний пример: "),
+                new Text($"{lastExample}\n\n", Yellow),
+
+                new Text("Нажмите любую клавишу...", DarkGray)
+            });
+
+            Console.ReadKey(true);
         }
 
         static bool WaitGame(string process, ref bool isWork)
@@ -248,7 +312,9 @@ namespace CRMP_Auto_Calc
         static void Chat_OnNewMessage(ChatLine line)
         {
             Pattern pattern = null;
+            Random rand = new Random();
             Write($"{line.WithoutColors().message}\n", DarkGray);
+            totalMessages++;
 
             if (settings.usePatterns)
             {
@@ -270,7 +336,9 @@ namespace CRMP_Auto_Calc
             int examplePos = line.WithoutColors().message.IndexOf(m.Value);
             if (examplePos != -1) WriteAt(examplePos, Console.CursorTop - 1, new Text(m.Value, settings.usePatterns && pattern != null ? Black : Green, settings.usePatterns && pattern != null ? DarkYellow : Black));
 
-            string answer = result.ToString();
+            answer = result.ToString();
+
+            lastExample = $"{m.Value} = {answer}";
 
             if (pattern == null)
             {
@@ -278,7 +346,7 @@ namespace CRMP_Auto_Calc
                 {
                     pattern = ".*",
                     answer = "",
-                    answerDelay = settings.answerDelay,
+                    answerDelay = settings.useRandomDelay ? rand.Next(settings.answerRandomDelay.Min, settings.answerRandomDelay.Max) : settings.answerDelay,
                     sendMode = settings.senderType
                 };
             }
@@ -288,10 +356,14 @@ namespace CRMP_Auto_Calc
             if (pattern.sendMode == 0) Clipboard.SetText(answer.ToString());
             else
             {
-                Thread.Sleep(pattern.answerDelay);
-                chat.SendMsg(answer, settings.chatOpened);
+                if (!settings.manualMode)
+                {
+                    Thread.Sleep(pattern.answerDelay);
+                    chat.SendMsg(answer, settings.chatOpened);
+                }
             }
-            Write(MakeDividedText($" {answer} "), Magenta);
+            Write(MakeDividedText($" {answer} {(!settings.manualMode ? "→ " : "")}"), Magenta);
+            solvedExamples++;
         }
     }
 }

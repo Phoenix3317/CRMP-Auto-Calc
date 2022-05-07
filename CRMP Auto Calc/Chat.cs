@@ -19,6 +19,9 @@ namespace CRMP_Auto_Calc
         public delegate void NewMessage(ChatLine line);
         public event NewMessage OnNewMessage;
 
+        public delegate void KeyPressed(KeyEventArgs e);
+        public event KeyPressed OnKeyPressed;
+
         public delegate void ChatStateChanged(bool isOpen);
         public event ChatStateChanged OnChatStateChanged;
 
@@ -54,6 +57,7 @@ namespace CRMP_Auto_Calc
                 SetChatState(false);
                 if (e.KeyCode == Keys.Enter) lastMsgTime = DateTime.Now;
             }
+            else OnKeyPressed(e);
         }
 
         public void SetChatState(bool isOpen)
