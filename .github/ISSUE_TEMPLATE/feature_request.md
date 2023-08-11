@@ -1,20 +1,5 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+Если у Вас появилась идея для улучшения приложения, пишите ее в следующем формате:
 
----
-
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+1. Заголовок, отражающий общую суть
+2. Полное описание Вашей идеи
+3. Ваш аккаунт в телеграм, для обсуждения идеи (по желанию)
