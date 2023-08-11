@@ -1,3 +1,11 @@
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: ''
+assignees: ''
+---
+
 Если у Вас появилась идея для улучшения приложения, пишите ее в следующем формате:
 
 1. Заголовок, отражающий общую суть
